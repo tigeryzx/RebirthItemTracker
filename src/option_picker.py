@@ -15,10 +15,12 @@ import platform
 import threading
 from error_stuff import log_error
 
+
 class OptionsMenu(object):
     """
     These are the standard save and load options functions.
     """
+
     def __init__(self):
         self.options = Options()
         self.root = Tk()
@@ -30,13 +32,15 @@ class OptionsMenu(object):
                       'IrisUPC', 'JasmineUPC', 'KodchiangUPC', 'Latha', 'LilyUPC', 'Lucida Console', 'MV Boli',
                       'Mangal', 'Microsoft Sans Serif', 'Miriam', 'Miriam Fixed', 'Narkisim', 'Raavi', 'Rod', 'Shruti',
                       'SimHei', 'Simplified Arabic', 'Simplified Arabic Fixed', 'Sylfaen', 'Tahoma', 'Times New Roman',
-                      'Traditional Arabic', 'Trebuchet MS', 'Tunga', 'Verdana']
-        self.game_versions = ['Rebirth', 'Afterbirth', 'Afterbirth+', 'Antibirth']
+                      'Traditional Arabic', 'Trebuchet MS', 'Tunga', 'Verdana', 'simsunnsimsun']
+        self.game_versions = ['Rebirth',
+                              'Afterbirth', 'Afterbirth+', 'Antibirth']
         self.network_queue = Queue()
 
         # Check if the system has the fonts installed, and remove them from the list if it doesn't
         try:
-            valid_pygame_fonts = [lower(x.replace(" ", "")) for x in self.fonts]
+            valid_pygame_fonts = [lower(x.replace(" ", ""))
+                                  for x in self.fonts]
             system_fonts = pygame.sysfont.get_fonts()
             to_delete = []
             for index, font in enumerate(valid_pygame_fonts):
@@ -45,8 +49,8 @@ class OptionsMenu(object):
             for index in to_delete[::-1]:
                 del self.fonts[index]
         except:
-            log_error("There may have been an error detecting system fonts.\n" + traceback.print_exc())
-
+            log_error(
+                "There may have been an error detecting system fonts.\n" + traceback.print_exc())
 
     pretty_name_map = {"read_from_server": "Watch Someone Else",
                        "write_to_server": "Let Others Watch Me",
@@ -55,10 +59,10 @@ class OptionsMenu(object):
                        "blck_cndl_mode": "BLCK CNDL mode",
                        "custom_title_enabled": "Change Window Title",
                        "log_file_check_seconds": "Check log file every"}
-    label_after_text = {"message_duration":"second(s)",
-                        "framerate_limit":"fps",
+    label_after_text = {"message_duration": "second(s)",
+                        "framerate_limit": "fps",
                         "log_file_check_seconds": "second(s)"}
-    connection_labels = {"starting":"Connecting to server for player list...",
+    connection_labels = {"starting": "Connecting to server for player list...",
                          "done": "Connecting to server for player list... Done",
                          "fail": "Connecting to server for player list... Failed"}
 
@@ -70,7 +74,8 @@ class OptionsMenu(object):
 
     def color_callback(self, source):
         # Prompt a color picker, set the options and the background/foreground of the button
-        nums, hex_color = askcolor(color=getattr(self.options, source), title="Color Chooser")
+        nums, hex_color = askcolor(color=getattr(
+            self.options, source), title="Color Chooser")
         if hex_color:
             opposite = self.opposite_color(hex_color)
             setattr(self.options, source, hex_color.upper())
@@ -115,7 +120,6 @@ class OptionsMenu(object):
             self.entries["trackerserver_url"].grid_remove()
             self.labels["trackerserver_url"].grid_remove()
 
-
         # Disable authkey if we don't write to server
         if self.checks.get("write_to_server").get():
             self.entries["trackerserver_authkey"].grid()
@@ -129,7 +133,8 @@ class OptionsMenu(object):
     def read_callback(self):
         if self.checks.get("read_from_server").get():
             self.checks.get("write_to_server").set(0)
-            self.labels["server_connect_label"].config(text=self.connection_labels["starting"])
+            self.labels["server_connect_label"].config(
+                text=self.connection_labels["starting"])
             t = threading.Thread(target=self.get_server_userlist_and_enqueue)
             t.start()
         self.checkbox_callback()
@@ -168,12 +173,14 @@ class OptionsMenu(object):
 
     def get_server_userlist_and_enqueue(self):
         try:
-            url = self.entries['trackerserver_url'].get() + "/tracker/api/userlist/"
+            url = self.entries['trackerserver_url'].get() + \
+                "/tracker/api/userlist/"
             json_state = urllib2.urlopen(url).read()
             users = json.loads(json_state)
             success = True
         except Exception:
-            log_error("Problem getting userlist from tracker server\n" + traceback.format_exc())
+            log_error(
+                "Problem getting userlist from tracker server\n" + traceback.format_exc())
             users = []
             success = False
         network_result = {"users": users, "success": success}
@@ -181,12 +188,13 @@ class OptionsMenu(object):
 
     def get_server_twitch_client_id(self):
         try:
-            url = self.entries['trackerserver_url'].get() + "/tracker/api/twitchclientid/"
+            url = self.entries['trackerserver_url'].get(
+            ) + "/tracker/api/twitchclientid/"
             return urllib2.urlopen(url).read()
         except Exception:
-            log_error("Couldn't get twitch client id from tracker server\n" + traceback.format_exc())
+            log_error(
+                "Couldn't get twitch client id from tracker server\n" + traceback.format_exc())
             return None
-
 
     def process_network_results(self):
         # OSX qSize is not emplemented use empty rather.
@@ -196,15 +204,16 @@ class OptionsMenu(object):
                 users_combobox_list = []
                 for user in network_result["users"]:
                     formatted_time_ago = self.seconds_to_text(user["seconds"])
-                    list_entry = user["name"] + " (updated " + formatted_time_ago + " ago)"
+                    list_entry = user["name"] + \
+                        " (updated " + formatted_time_ago + " ago)"
                     users_combobox_list.append(list_entry)
                 self.entries['twitch_name']['values'] = users_combobox_list
                 label = "done" if network_result["success"] else "fail"
-                self.labels["server_connect_label"].config(text=self.connection_labels[label])
+                self.labels["server_connect_label"].config(
+                    text=self.connection_labels[label])
             except Queue.Empty:
                 pass
         self.root.after(100, self.process_network_results)
-
 
     def trim_name(self, event):
         name = self.entries['twitch_name'].get()
@@ -233,57 +242,70 @@ class OptionsMenu(object):
         if platform.system() == "Darwin":
             self.root.iconbitmap('options.ico')
         else:
-            self.root.iconbitmap(default = 'options.ico')
+            self.root.iconbitmap(default='options.ico')
 
         # Generate numeric options by looping over option types
-        self.integer_keys = ["message_duration", "framerate_limit", "read_delay"]
-        self.float_keys   = ["size_multiplier", "log_file_check_seconds"]
+        self.integer_keys = ["message_duration",
+                             "framerate_limit", "read_delay"]
+        self.float_keys = ["size_multiplier", "log_file_check_seconds"]
         self.entries = {}
         self.labels = {}
         self.checks = {}
         self.buttons = {}
 
         # Draw the "Text Options" box
-        text_options_frame = LabelFrame(self.root, text="Text Options", padx=20, pady=20)
+        text_options_frame = LabelFrame(
+            self.root, text="Text Options", padx=20, pady=20)
         text_options_frame.grid(row=0, column=0, padx=5, pady=5)
-        validate_numeric_field = (self.root.register(self.ValidateNumeric), '%d', '%i', '%P', '%s', '%S', '%v', '%V', '%W')
+        validate_numeric_field = (self.root.register(
+            self.ValidateNumeric), '%d', '%i', '%P', '%s', '%S', '%v', '%V', '%W')
         next_row = 0
         for index, opt in enumerate(["message_duration"]):
-            Label(text_options_frame, text=self.pretty_name(opt)).grid(row=next_row)
-            self.entries[opt] = Entry(text_options_frame, validate="key", validatecommand=validate_numeric_field)
+            Label(text_options_frame, text=self.pretty_name(
+                opt)).grid(row=next_row)
+            self.entries[opt] = Entry(
+                text_options_frame, validate="key", validatecommand=validate_numeric_field)
             self.entries[opt].grid(row=next_row, column=1)
             self.entries[opt].insert(0, getattr(self.options, opt))
             if opt in self.label_after_text:
-                Label(text_options_frame, text=self.label_after_text[opt]).grid(row=next_row, column=2)
+                Label(text_options_frame, text=self.label_after_text[opt]).grid(
+                    row=next_row, column=2)
             next_row += 1
 
         for index, opt in enumerate(["show_font"]):
-            Label(text_options_frame, text=self.pretty_name(opt)).grid(row=next_row)
+            Label(text_options_frame, text=self.pretty_name(
+                opt)).grid(row=next_row)
             initialfont = StringVar()
             initialfont.set(getattr(self.options, opt))
-            self.entries[opt] = ttk.Combobox(text_options_frame, values=sorted(self.fonts), textvariable=initialfont, state='readonly')
+            self.entries[opt] = ttk.Combobox(text_options_frame, values=sorted(
+                self.fonts), textvariable=initialfont, state='readonly')
             self.entries[opt].grid(row=next_row, column=1)
 
         for index, opt in enumerate(["bold_font"]):
             self.checks[opt] = IntVar()
-            c = Checkbutton(text_options_frame, text=self.pretty_name(opt), variable=self.checks[opt])
+            c = Checkbutton(text_options_frame, text=self.pretty_name(
+                opt), variable=self.checks[opt])
             c.grid(row=next_row, column=2)
             next_row += 1
             if getattr(self.options, opt):
                 c.select()
 
         for index, opt in enumerate(["status_message"]):
-            Label(text_options_frame, text=self.pretty_name(opt)).grid(row=next_row)
+            Label(text_options_frame, text=self.pretty_name(
+                opt)).grid(row=next_row)
             self.entries[opt] = Entry(text_options_frame)
             self.entries[opt].grid(row=next_row, column=1)
             self.entries[opt].insert(0, getattr(self.options, opt))
             next_row += 1
 
-        text_checkboxes = ["show_description", "show_status_message", "word_wrap"]
+        text_checkboxes = ["show_description",
+                           "show_status_message", "word_wrap"]
         for index, opt in enumerate(text_checkboxes):
             self.checks[opt] = IntVar()
-            c = Checkbutton(text_options_frame, text=self.pretty_name(opt), variable=self.checks[opt])
-            c.grid(row=len(text_checkboxes) + 1 + index / 2, column=index % 2)  # 2 checkboxes per row
+            c = Checkbutton(text_options_frame, text=self.pretty_name(
+                opt), variable=self.checks[opt])
+            c.grid(row=len(text_checkboxes) + 1 + index / 2,
+                   column=index % 2)  # 2 checkboxes per row
             if getattr(self.options, opt):
                 c.select()
 
@@ -292,30 +314,37 @@ class OptionsMenu(object):
                 c.configure(command=self.checkbox_callback)
 
         # Draw the other options box
-        display_options_frame = LabelFrame(self.root, text="", padx=20, pady=20)
+        display_options_frame = LabelFrame(
+            self.root, text="", padx=20, pady=20)
         display_options_frame.grid(row=1, column=0, padx=5, pady=5)
         next_row = 0
 
         for index, opt in enumerate(["game_version"]):
-            Label(display_options_frame, text=self.pretty_name(opt)).grid(row=next_row)
+            Label(display_options_frame, text=self.pretty_name(
+                opt)).grid(row=next_row)
             initialversion = StringVar()
             initialversion.set(getattr(self.options, opt))
-            self.entries[opt] = ttk.Combobox(display_options_frame, values=self.game_versions, textvariable=initialversion, state='readonly')
+            self.entries[opt] = ttk.Combobox(
+                display_options_frame, values=self.game_versions, textvariable=initialversion, state='readonly')
             self.entries[opt].grid(row=next_row, column=1)
             next_row += 1
 
         for index, opt in enumerate(["framerate_limit", "log_file_check_seconds", "size_multiplier"]):
-            Label(display_options_frame, text=self.pretty_name(opt)).grid(row=next_row)
-            self.entries[opt] = Entry(display_options_frame, validate="key", validatecommand=validate_numeric_field)
+            Label(display_options_frame, text=self.pretty_name(
+                opt)).grid(row=next_row)
+            self.entries[opt] = Entry(
+                display_options_frame, validate="key", validatecommand=validate_numeric_field)
             self.entries[opt].grid(row=next_row, column=1)
             self.entries[opt].insert(0, getattr(self.options, opt))
             if opt in self.label_after_text:
-                Label(display_options_frame, text=self.label_after_text[opt]).grid(row=next_row, column=2)
+                Label(display_options_frame, text=self.label_after_text[opt]).grid(
+                    row=next_row, column=2)
             next_row += 1
 
         # Generate text options by looping over option types
         for index, opt in enumerate(["item_details_link"]):
-            Label(display_options_frame, text=self.pretty_name(opt)).grid(row=next_row)
+            Label(display_options_frame, text=self.pretty_name(
+                opt)).grid(row=next_row)
             self.entries[opt] = Entry(display_options_frame)
             self.entries[opt].grid(row=next_row, column=1)
             self.entries[opt].insert(0, getattr(self.options, opt))
@@ -338,8 +367,10 @@ class OptionsMenu(object):
                  "show_space_items", "show_blind_icon", "make_items_glow", "blck_cndl_mode",
                  "check_for_updates", "custom_title_enabled"]):
             self.checks[opt] = IntVar()
-            c = Checkbutton(display_options_frame, text=self.pretty_name(opt), variable=self.checks[opt])
-            c.grid(row=len(self.entries) + 1 + index / 2, column=index % 2) # 2 checkboxes per row
+            c = Checkbutton(display_options_frame, text=self.pretty_name(
+                opt), variable=self.checks[opt])
+            c.grid(row=len(self.entries) + 1 + index / 2,
+                   column=index % 2)  # 2 checkboxes per row
             if getattr(self.options, opt):
                 c.select()
             if opt == "custom_title_enabled":
@@ -347,20 +378,24 @@ class OptionsMenu(object):
             next_row += len(self.entries) / 2 + 1
 
         # Generate label for custom title
-        Label(display_options_frame, text=self.pretty_name("custom_title")).grid(row=next_row)
+        Label(display_options_frame, text=self.pretty_name(
+            "custom_title")).grid(row=next_row)
         self.entries["custom_title"] = Entry(display_options_frame)
         self.entries["custom_title"].grid(row=next_row, column=1)
-        self.entries["custom_title"].insert(0, getattr(self.options, "custom_title"))
+        self.entries["custom_title"].insert(
+            0, getattr(self.options, "custom_title"))
         next_row += 1
 
         # Draw the "Tournament Settings" box
-        tournament_settings_frame = LabelFrame(self.root, text="Tournament Settings", padx=20, pady=20)
+        tournament_settings_frame = LabelFrame(
+            self.root, text="Tournament Settings", padx=20, pady=20)
         tournament_settings_frame.grid(row=0, column=1, rowspan=2, sticky=N)
         next_row = 0
 
         for index, opt in enumerate(["change_server"]):
             self.checks[opt] = IntVar()
-            c = Checkbutton(tournament_settings_frame, text=self.pretty_name(opt), variable=self.checks[opt], indicatoron=False)
+            c = Checkbutton(tournament_settings_frame, text=self.pretty_name(
+                opt), variable=self.checks[opt], indicatoron=False)
             c.grid(row=next_row, column=0, pady=2)
             c.configure(command=self.checkbox_callback)
             if getattr(self.options, opt, False):
@@ -369,7 +404,8 @@ class OptionsMenu(object):
 
         # Generate text options by looping over option types
         for index, opt in enumerate(["trackerserver_url"]):
-            self.labels[opt] = Label(tournament_settings_frame, text=self.pretty_name(opt))
+            self.labels[opt] = Label(
+                tournament_settings_frame, text=self.pretty_name(opt))
             self.labels[opt].grid(row=next_row, pady=2)
             self.entries[opt] = Entry(tournament_settings_frame)
             self.entries[opt].grid(row=next_row, column=1, pady=2)
@@ -377,10 +413,12 @@ class OptionsMenu(object):
             next_row += 1
 
         paddings = {"read_from_server": 5, "write_to_server": 120}
-        callbacks = {"read_from_server":self.read_callback, "write_to_server":self.write_callback}
+        callbacks = {"read_from_server": self.read_callback,
+                     "write_to_server": self.write_callback}
         for index, opt in enumerate(["read_from_server", "write_to_server"]):
             self.checks[opt] = IntVar()
-            c = Checkbutton(tournament_settings_frame, text=self.pretty_name(opt), variable=self.checks[opt], indicatoron=False)
+            c = Checkbutton(tournament_settings_frame, text=self.pretty_name(
+                opt), variable=self.checks[opt], indicatoron=False)
             c.grid(row=next_row, column=index, pady=2, padx=paddings[opt])
             c.configure(command=callbacks[opt])
             if getattr(self.options, opt, False):
@@ -388,23 +426,27 @@ class OptionsMenu(object):
         next_row += 1
 
         for index, opt in enumerate(["server_connect_label"]):
-            self.labels[opt] = Label(self.root, text="", width=len(self.connection_labels["fail"]))
-            self.labels[opt].grid(row=next_row, pady=2, columnspan=2, in_=tournament_settings_frame)
+            self.labels[opt] = Label(self.root, text="", width=len(
+                self.connection_labels["fail"]))
+            self.labels[opt].grid(row=next_row, pady=2,
+                                  columnspan=2, in_=tournament_settings_frame)
             next_row += 1
 
         for index, opt in enumerate(["twitch_name"]):
-            self.labels[opt] = Label(tournament_settings_frame, text=self.pretty_name(opt))
+            self.labels[opt] = Label(
+                tournament_settings_frame, text=self.pretty_name(opt))
             self.labels[opt].grid(row=next_row, pady=2)
-            self.entries[opt] = ttk.Combobox(tournament_settings_frame, width=40)
+            self.entries[opt] = ttk.Combobox(
+                tournament_settings_frame, width=40)
             self.entries[opt].set(getattr(self.options, opt, ""))
             self.entries[opt].bind("<<ComboboxSelected>>", self.trim_name)
             self.entries[opt].grid(row=next_row, column=1)
             next_row += 1
 
-
         # Generate text options by looping over option types
         for index, opt in enumerate(["read_delay", "trackerserver_authkey"]):
-            self.labels[opt] = Label(tournament_settings_frame, text=self.pretty_name(opt))
+            self.labels[opt] = Label(
+                tournament_settings_frame, text=self.pretty_name(opt))
             self.labels[opt].grid(row=next_row, pady=2)
             self.entries[opt] = Entry(tournament_settings_frame)
             self.entries[opt].grid(row=next_row, column=1, pady=2)
@@ -468,9 +510,9 @@ class OptionsMenu(object):
             self.root.update()
         else:
             if platform.system() != "Darwin":
-                # todo: figure out how to do this on mac. Right now this hacky logic to avoid going 
+                # todo: figure out how to do this on mac. Right now this hacky logic to avoid going
                 # off the edge of the screen is doing who-knows-what when run on a mac.
-                self.root.attributes("-fullscreen", True) 
+                self.root.attributes("-fullscreen", True)
 
             # For some reason using 'update' here affects the actual window height we want to get later
             self.root.update_idletasks()
@@ -489,7 +531,8 @@ class OptionsMenu(object):
             self.root.state("normal")
         else:
             if platform.system() != "Darwin":
-                self.root.attributes("-fullscreen", False) # todo: figure out how to do this on mac
+                # todo: figure out how to do this on mac
+                self.root.attributes("-fullscreen", False)
             self.root.update()
 
         # Here's the actual size of the window we're drawing

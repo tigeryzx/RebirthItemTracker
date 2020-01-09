@@ -21,13 +21,13 @@
    "show_blind_icon": true, 
    "show_description": true, 
    "show_floors": true, 
-   "show_font": "Arial", 
+   "show_font": "simsunnsimsun", 
    "show_health_ups": true, 
    "show_rerolled_items": true, 
    "show_space_items": true, 
    "show_status_message": true, 
    "size_multiplier": 1.0, 
-   "status_message": "Seed: {seed} / Guppy: {guppy} / Leviathan: {leviathan} / Spun: {spun} / {version_number} / Room: {room_id}", 
+   "status_message": "Seed : {seed} / Guppy: {guppy} / Leviathan: {leviathan} / Spun: {spun} / {version_number} / Room: {room_id}", 
    "text_color": "#FFFFFF", 
    "trackerserver_authkey": "", 
    "trackerserver_url": "http://isaacitemtracker.com:8080", 
@@ -35,6 +35,6 @@
    "width": 1315, 
    "word_wrap": false, 
    "write_to_server": false, 
-   "x_position": 186, 
-   "y_position": 926
+   "x_position": 277, 
+   "y_position": 891
 }
